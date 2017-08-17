@@ -18,7 +18,7 @@ chmod +x res.sh
 copy a script to another directory  with images and ...
 
 ```bash
-./res.sh 800 600
+./res.sh [width] [height]
 ```
 ##  Dependent packages: imagemagick 
 	
