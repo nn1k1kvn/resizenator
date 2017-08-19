@@ -122,8 +122,11 @@ echo    # перевод строки
 if [[ $REPLY =~ ^[YyДд]$ ]]
 then
 	print_tab "ФАЙЛ" "СТАТУС"
-	for i in "$DIR"/*; do
-    	[ -f "$i" ] || continue 						# переход в начало цикла если не файл
+	recurse(){
+	for i in "$1"/*; do
+    	#[ -f "$i" ] || continue                        # переход в начало цикла если не файл
+    	#[ -d "$i" ] && echo "dir: $i" && recurse "$i"   # если дирректория то выводи ее и рекрсируем						
+       	[ -d "$i" ] && recurse "$i"
        	filename="${i##*/}" 				   			# получаем название файла из full path
     	if  [[ ${filename^^}  =~ $PATTERN_IMG ]]        # конвертируем $filename в верхний регистр и сравниваем с regex 
     	then 
@@ -132,7 +135,7 @@ then
        		{ #try 
     			#set +e
     			# проверяем файл на поврежденность. Если не поврежден, то статус OK
-    			identify -verbose "$filename" > /dev/null 2>&1  &&  status="OK"
+    			identify -verbose "$i" > /dev/null 2>&1  &&  status="OK"
     		
 			} || { #catch 
     			((cnt_corrupt++))						#счетчик поврежденных файлов
@@ -143,28 +146,31 @@ then
     		 
 			
 			print_tab	# выводим на печать.
-    		
+     		
     		#"2017-03-20 15.19.11 копияx.jpg JPEG 600x400 600x400+0+0 8-bit DirectClass 55.2KB 0.000u 0:00.000"
-			SIZE=$(identify "$filename" | grep -oP "(?<=\s)(\d+x\d+)(?=\s)") # вытаскиваем размер 
+			SIZE=$(identify "$i" | grep -oP "(?<=\s)(\d+x\d+)(?=\s)") # вытаскиваем размер 
 	 		SIZEX=$(echo $SIZE | cut -f 1 -d 'x')        # ширина
     		SIZEY=$(echo $SIZE | cut -f 2 -d 'x')        # высота
             # конвертируем
     		if [[ $SIZEX -ge $SIZEY ]]  # >=
 			then
-		  		convert -size ${w}x${h} "${filename}" -resize ${w}x${h} "${filename}"
+		  		convert -size ${w}x${h} "${i}" -resize ${w}x${h} "${i}"
 			else
-  		  		convert -size ${h}x${w} "${filename}" -resize ${h}x${w} "{$filename}"
+  		  		convert -size ${h}x${w} "${i}" -resize ${h}x${w} "${i}"
 			fi
+			
 		fi 
 	done
-	
+	}
+	recurse "$DIR"
 	if [[ $cnt -eq 0 ]] # =
 	then
 		echo -e "Ошибка: В текущей дирректории не найдены файлы с изображениями." >&2; exit 1
 	else
 		echo
 		echo -n "Конвертация завершена. "
-		echo -e "Найдено $cnt картинок. Из них $cnt_corrupt поврежденных."
+		echo -n "Найдено $cnt картинок. " 
+		[ -n "$cnt_corrupt" ] &&  echo -e "Из них $cnt_corrupt поврежденных."
 		exit 0
 	fi
 fi
