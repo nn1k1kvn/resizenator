@@ -1,6 +1,6 @@
 ## Overview:
 
-change resize pictures in directory
+change resize pictures in directory and subdirectories
 
 ##  OS: 
 	
