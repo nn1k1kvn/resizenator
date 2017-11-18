@@ -29,7 +29,7 @@ copy a script to another directory  with images and ...
 
 
 ## Feedback:
-- Contact: [Miksha](https://fb.com/miksha.happy)
+- Contact: 
 
 ## You can show your gratitude to me :)
 
